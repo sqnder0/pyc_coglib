@@ -3,3 +3,18 @@ env/
 
 #Pycache
 __pycache__/
+
+#Env variables like discord token
+.env
+
+# The example settings file
+example_settings.json
+
+# Test files
+tests/
+
+#vscode
+.vscode/
+
+# Logs
+logs/
