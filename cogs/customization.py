@@ -103,7 +103,7 @@ class Customization(commands.Cog):
             
         
         else:
-            SETTINGS.put("embed_color", color)
+            SETTINGS.put("embed.color", color)
             message = f"embed color set to {color}"
             self.logger.info(message)
             

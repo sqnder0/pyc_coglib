@@ -1,1 +1,27 @@
-{}
+{
+  "customization": {
+    "presence": {
+      "activity": "none",
+      "status": "online",
+      "message": ""
+    },
+    "embed_color": "#5865F2"
+  },
+  "tickets": {
+    "ticket": {
+      "category": "1265347531865456721",
+      "description": "ticket description"
+    },
+    "embed": {
+      "description": "Embed description"
+    }
+  },
+  "embed": {
+    "thumbnail": "",
+    "description": "Ticket channel description",
+    "color": "#ffffff"
+  },
+  "ticket": {
+    "description": "ticket description"
+  }
+}

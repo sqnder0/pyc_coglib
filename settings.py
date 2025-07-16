@@ -23,7 +23,7 @@ class Settings():
     def save(self):
         """Save this class' settings to their json file."""
         with open(self.filename, "w") as file:
-            json.dump(self.settings, file)
+            json.dump(self.settings, file, indent=3)
     def put(self, path: str, value):
         """
         Set or overwrite the value at the specified dot-separated path in the settings JSON.
@@ -118,7 +118,7 @@ class Settings():
     
     def get_settings_as_dict(self): return self.settings
     
-    def get_embed_color(self): return discord.Color(int(self.get_or_create("customization.embed_color", "#5865F2").strip().lstrip("#"), 16))
+    def get_embed_color(self): return discord.Color(int(self.get_or_create("embed.color", "#5865F2").strip().lstrip("#"), 16))
         
 
 def get_settings():

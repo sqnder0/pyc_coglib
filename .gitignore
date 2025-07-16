@@ -8,7 +8,7 @@ __pycache__/
 .env
 
 # The example settings file
-example_settings.json
+settings.json
 
 # Test files
 tests/
