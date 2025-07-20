@@ -119,7 +119,6 @@ class Settings():
     def get_settings_as_dict(self): return self.settings
     
     def get_embed_color(self): return discord.Color(int(self.get_or_create("embed.color", "#5865F2").strip().lstrip("#"), 16))
-        
 
 def get_settings():
     if not hasattr(get_settings, "_instance"):

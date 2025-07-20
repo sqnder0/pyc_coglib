@@ -80,6 +80,7 @@ class Customization(commands.Cog):
         self.bot = bot
         self.logger = logging.getLogger("main")
     
+    @app_commands.checks.has_permissions(administrator=True)
     @app_commands.command(name="set_presence", description="Set the presence of the bot.")
     async def set_presence(self, ctx: discord.Interaction,
         status: StatusEnum,
@@ -93,6 +94,7 @@ class Customization(commands.Cog):
         
         await load_status(self.bot, ctx)
     
+    @app_commands.checks.has_permissions(administrator=True)
     @app_commands.command(name="set_embed_color", description="Set the bot's embeds color")
     async def set_embed_color(self, ctx: discord.Interaction, color: str):
         raw = color.strip().lstrip("#").lower()
