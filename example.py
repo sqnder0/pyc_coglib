@@ -75,6 +75,13 @@ async def load_extensions(bot):
         if filename.endswith(".py"):
             await bot.load_extension(f"cogs.{filename[:-3]}")
 
+@bot.tree.error
+async def on_app_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+    if isinstance(error, app_commands.MissingPermissions):
+        await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
+    else:
+        await interaction.response.send_message("Something went wrong, contact an administrator if necessary", ephemeral=True)
+
 # Run the bot
 if __name__ == "__main__":
     if TOKEN != None:
