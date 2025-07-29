@@ -148,7 +148,7 @@ class TicketButtons(discord.ui.View):
         super().__init__(timeout=None)
     
     # Initialize the button
-    @discord.ui.button(label="Create ticket", style=discord.ButtonStyle.green)
+    @discord.ui.button(label="Create ticket", style=discord.ButtonStyle.green, custom_id="open_ticket")
     async def create_ticket_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         logger.debug("Creating ticket...")
         
@@ -219,7 +219,7 @@ class TicketControlButtons(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
 
-    @discord.ui.button(label="Claim Ticket", style=discord.ButtonStyle.blurple)
+    @discord.ui.button(label="Claim Ticket", style=discord.ButtonStyle.blurple, custom_id="claim_ticket")
     async def claim_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
         # Update the embed with the claim information
         
@@ -257,11 +257,11 @@ class TicketControlButtons(discord.ui.View):
             await message.edit(embed=embed, view=self)
             await interaction.response.send_message(f"Ticket claimed by {interaction.user.mention}", ephemeral=True)
 
-    @discord.ui.button(label="Close Ticket", style=discord.ButtonStyle.red)
+    @discord.ui.button(label="Close Ticket", style=discord.ButtonStyle.red, custom_id="close_ticket")
     async def close_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
         # Check if the user has permission to close the ticket
         
-               # Get the embed and guild
+        # Get the embed and guild
         message = interaction.message
         guild = interaction.guild
         
