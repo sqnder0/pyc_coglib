@@ -18,3 +18,7 @@ tests/
 
 # Logs
 logs/
+
+# Database
+sqlite.db
+sqlite.db-journal
