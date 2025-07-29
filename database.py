@@ -43,6 +43,7 @@ class Database():
     def close(self):
         """Close & save the database"""
         if self.connection:
+            self.commit()
             self.connection.close()
             logger.debug("Database closed")
         else:
