@@ -6,7 +6,9 @@ from dotenv import load_dotenv
 import logging
 from datetime import datetime
 from settings import get_settings
-import json
+import signal
+import asyncio
+from database import get_database
 
 # Load environment variables from .env file
 load_dotenv()
@@ -36,6 +38,9 @@ logger.setLevel(logging.DEBUG)
 
 # Get the settings
 settings = get_settings()
+
+# Setup the database
+DATABASE = get_database()
 
 # Set up bot intents and bot instance
 intents = discord.Intents.all()
@@ -77,15 +82,55 @@ async def load_extensions(bot):
 
 @bot.tree.error
 async def on_app_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
-    if isinstance(error, app_commands.MissingPermissions):
-        await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
-    else:
-        await interaction.response.send_message("Something went wrong, contact an administrator if necessary", ephemeral=True)
+    original_error = getattr(error, "original", error)
+    cmd_name = interaction.command.name if interaction.command else "<unknown>"
 
-# Run the bot
-if __name__ == "__main__":
-    if TOKEN != None:
-        logger.info("Bot token found, starting bot.")
-        bot.run(TOKEN)
+    if isinstance(original_error, app_commands.MissingPermissions):
+        if not interaction.response.is_done():
+            await interaction.response.send_message("🚫 You don't have permission to use this command", ephemeral=True)
+        else:
+            await interaction.followup.send("🚫 You don't have permission to use this command", ephemeral=True)
+        
+        logger.warning(
+            f"{interaction.user} tried to use `{cmd_name}` without required permissions: {original_error.missing_permissions}"
+        )
     else:
-        logger.error("Token was not found!")
+        if not interaction.response.is_done():
+            await interaction.response.send_message("❌ Something went wrong. Contact an admin.", ephemeral=True)
+        else:
+            await interaction.followup.send("❌ Something went wrong. Contact an admin.", ephemeral=True)
+        
+        logger.error(
+            f"{interaction.user} failed to use command `{cmd_name}` due to: {original_error}",
+            exc_info=True
+        )
+# Run the bot
+async def main():
+    stop_event = asyncio.Event()
+    
+    def handle_shutdown(*_):
+        stop_event.set()
+
+    # Listen for termination
+    signal.signal(signal.SIGINT, handle_shutdown)
+    signal.signal(signal.SIGTERM, handle_shutdown)
+    
+        # Start bot
+    if TOKEN is not None:
+        logger.info("Bot token found, starting bot.")
+        bot_task = asyncio.create_task(bot.start(TOKEN))
+
+        # Wait for shutdown
+        await stop_event.wait()
+
+        logger.debug("Shutdown detected, saving database...")
+        DATABASE.close()
+
+        logger.info("Closing bot...")
+        await bot.close()
+        await bot_task
+    else:
+        logger.error("Bot token not found.")
+
+if __name__ == "__main__":
+    asyncio.run(main())
