@@ -25,9 +25,11 @@
       "description": "ticket description"
    },
    "moderation": {
-      "warn_threshold": 3,
-      "max_ping_count": 2,
-      "max_caps_percent": 30,
-      "mod_log_channel": null
+      "warn_threshold": 2,
+      "max_ping_count": 3,
+      "max_caps_percent": 40,
+      "mod_log_channel": 1395450398013395095,
+      "max_ping": 3,
+      "max_caps": 20
    }
 }
