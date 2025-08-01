@@ -22,3 +22,9 @@ logs/
 # Database
 sqlite.db
 sqlite.db-journal
+
+#Bootstrap
+/bootstrap/
+
+# Dependencies
+/node_modules/
