@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/static/bootstrap.css" />
+    <link rel="stylesheet" href="/static/main.css" />
+    <title>Login</title>
+  </head>
+  <body class="bg-dark p-5 text-white d-flex align-items-center justify-content-center flex-column">
+    {% if error %}
+    <div class="alert alert-danger position-absolute top-0 start-50 translate-middle-x mt-5" role="alert">{{error}}</div>
+    {% endif %}
+    <form class="bg-light rounded p-5" method="POST">
+      <h1>Login</h1>
+      <p class="text-break">To access the web panel, you must first log in using the password provided.</p>
+      <div class="mb-3">
+        <label class="form-label fw-bold" for="password">Password</label>
+        <input type="password" id="password" name="password" class="form-control no-focus" />
+      </div>
+      <div class="mb-3">
+        <input class="form-check-input no-focus" type="checkbox" value="true" name="remember" id="remember" />
+        <label class="form-check-label" for="remember">Remember me</label>
+      </div>
+      <button type="submit" class="btn btn-primary">Login</button>
+    </form>
+  </body>
+</html>

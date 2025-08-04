@@ -1,0 +1,39 @@
+.square {
+  aspect-ratio: 1;
+  min-height: fit-content;
+  min-width: fit-content;
+}
+.data-square {
+  @extend .square;
+  height: 12vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.375rem;
+}
+
+#cog-list {
+  max-width: fit-content;
+}
+
+.console {
+  max-height: 50vh;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  scroll-behavior: smooth;
+  max-height: 50vh;
+  height: 50vh;
+
+  #console {
+    p {
+      margin-bottom: 2px;
+    }
+  }
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+}

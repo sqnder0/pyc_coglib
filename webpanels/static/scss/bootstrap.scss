@@ -1,0 +1,52 @@
+// Custom.scss
+// Option A: Include all of Bootstrap
+$primary: #1a1a1a;
+$secondary: #4d4d4d;
+$light: #666666;
+$dark: #333333;
+$white: #ffffff;
+$transparent: #00000000;
+
+.custom-checkbox {
+  border: 2px solid $white;
+}
+
+.no-focus {
+  accent-color: #000; /* Change the check color */
+}
+
+.no-focus:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+// WebKit browsers (Chrome, Edge, Safari)
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: $secondary;
+  border-radius: 0px 0.375rem 0.375rem 0rem;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: lighten($primary, 15%);
+  border-radius: 0.375rem;
+}
+
+::-webkit-scrollbar-button {
+  display: none;
+}
+
+// Firefox
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: lighten($light, 15%) $light;
+  }
+}
+
+// Include any default variable overrides here (though functions won’t be available)
+@import "./bootstrap/scss/bootstrap";

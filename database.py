@@ -29,7 +29,13 @@ class Database():
         Returns:
             list[tuple[]]: Every tuple is a row, every item in the tuple is a column.
         """
-        self.cursor.execute(statement, args)
+        
+        # Only pass args if there are args.
+        if args:
+            self.cursor.execute(statement, args)
+        else:
+            self.cursor.execute(statement)
+        
         result = self.cursor.fetchall()
         
         return result

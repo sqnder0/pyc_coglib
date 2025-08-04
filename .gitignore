@@ -24,7 +24,7 @@ sqlite.db
 sqlite.db-journal
 
 #Bootstrap
-/bootstrap/
+bootstrap/
 
 # Dependencies
-/node_modules/
+node_modules/

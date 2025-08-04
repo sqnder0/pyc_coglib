@@ -1,4 +1,5 @@
 import os
+import asyncio
 import discord
 from discord.ext import commands
 from discord import app_commands
@@ -23,9 +24,11 @@ if not os.path.exists("logs/"):
 #Setup logging.
 logger = logging.getLogger("main")
 
+LOG_FILENAME = f"""logs/{datetime.now().strftime("%d-%m-%Y")}.log"""
+
 formatter = logging.Formatter("[%(asctime)s] [%(levelname)s]: %(message)s", "%H:%M")
 console_handler = logging.StreamHandler()
-file_handler = logging.FileHandler(filename=f"logs/{datetime.now().strftime("%d-%m-%Y")}.log", mode="w")
+file_handler = logging.FileHandler(filename=LOG_FILENAME, mode="a")
 
 console_handler.setFormatter(formatter)
 file_handler.setFormatter(formatter)
@@ -39,8 +42,15 @@ logger.setLevel(logging.DEBUG)
 # Get the settings
 settings = get_settings()
 
+# Set the project dir
+project_dir = os.path.dirname(os.path.abspath(__file__))
+
 # Setup the database
 DATABASE = get_database()
+
+# Setup api default values, this won't be used if you don't have any webpanels installed
+HOST = "localhost"
+PORT = 5566
 
 # Set up bot intents and bot instance
 intents = discord.Intents.all()
@@ -50,7 +60,6 @@ tree = bot.tree
 # Sync slash commands on ready
 @bot.event
 async def on_ready():
-    await tree.sync()
     logger.info(f"Logged in as {bot.user}")
     
     logger.info("Loading cogs...")
@@ -63,6 +72,7 @@ async def on_ready():
         logger.exception("An exception happened during the cog loading.")  
     
     try:
+        #TODO: Add a /sync command, to not sync commands every time you load the bot
         sync_before = datetime.now()
         synced = await bot.tree.sync()
         delta = datetime.now() - sync_before
@@ -104,8 +114,9 @@ async def on_app_error(interaction: discord.Interaction, error: app_commands.App
             f"{interaction.user} failed to use command `{cmd_name}` due to: {original_error}",
             exc_info=True
         )
+        
 # Run the bot
-async def main():
+async def bot_setup():
     stop_event = asyncio.Event()
     
     def handle_shutdown(*_):
@@ -131,6 +142,28 @@ async def main():
         await bot_task
     else:
         logger.error("Bot token not found.")
+
+
+async def main():
+    if os.path.exists(os.path.join(project_dir, "webpanels/")):
+        from api import get_server, set_bot, set_host, set_port
+        
+        # Configure the api
+        set_host(HOST)
+        set_port(PORT)
+        set_bot(bot)
+        
+        server = get_server()
+
+        # Run both the bot and the API as an asyncio task
+        bot_task = asyncio.create_task(bot_setup())
+        api_task = asyncio.create_task(server.serve())
+
+        await asyncio.gather(bot_task, api_task)
+        
+    else:
+        # Just run the bot in the main thread
+        await bot_setup()
 
 if __name__ == "__main__":
     asyncio.run(main())

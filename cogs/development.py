@@ -34,6 +34,8 @@ class DevelopmentCog(commands.Cog):
         
         logger.debug(message)
         await ctx.response.send_message(message)
+    
+    #TODO: Add a /sync command, to not sync commands every time you load the bot
         
 
 async def setup(bot: commands.Bot):

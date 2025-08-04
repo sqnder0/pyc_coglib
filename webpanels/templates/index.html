@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    {% if bot.status == 'online' %}
+    <title>{{ title }}</title>
+    {% else %}
+    <title>Offline</title>
+    {% endif %}
+    <link rel="stylesheet" href="/static/bootstrap.css" />
+    <link rel="stylesheet" href="/static/main.css" />
+    <script src="/static/main.js" defer></script>
+  </head>
+  <body class="bg-dark p-5 text-white">
+    <div class="alert alert-danger position-fixed mt-4 start-50 translate-middle d-none" id="fancy-error"></div>
+    <div class="alert alert-success position-fixed mt-4 start-50 translate-middle d-none" id="fancy-success"></div>
+    <div class="container m-0">
+      <div class="row">
+        <div class="col">
+          {% if bot.status == 'online' %}
+          <h1><span id="name">{{ bot.name }}</span><span id="discriminator" class="text-light">#{{ bot.id }}</span></h1>
+          {% else %}
+          <h1><span id="name">Bot is offline</span><span id="discriminator" class="text-light"></span></h1>
+          {% endif %}
+        </div>
+        <div class="col d-flex justify-content-end">
+          <div class="data-square-wrapper me-3">
+            <div class="bg-light data-square fw-bold fs-5" id="member-count">--</div>
+            <p class="fw-bold text-center">Members</p>
+          </div>
+          <div class="data-square-wrapper me-3">
+            <div class="bg-light data-square fw-bold fs-5" id="command-count">--</div>
+            <p class="fw-bold text-center">Commands</p>
+          </div>
+          <div class="data-square-wrapper">
+            <div class="bg-light data-square fw-bold fs-5" id="latency">--</div>
+            <p class="fw-bold text-center">Latency</p>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col bg-light rounded pe-5 pb-3" id="cog-list">
+          <h1 class="fs-1 fw-bold mb-4">Registered cogs:</h1>
+          {% for cog in bot.cogs.cogs%}
+          <div class="form-check fs-5 me-5 ms-4">
+            <input class="form-check-input no-focus cog-checkbox" type="checkbox" {% if cog.active %} checked {% endif %}id="{{ cog.name }}" />
+            <label class="form-check-label" for="{{ cog.name }}"> {{ cog.name }}</label>
+          </div>
+          {% endfor %}
+        </div>
+        <div class="col bg-primary ms-5 console rounded"><div id="console"></div></div>
+      </div>
+      <div class="row">
+        <div class="col p-5 d-flex justify-content-end">
+          <button id="start" class="btn btn-success fs-3 fw-bold {% if bot.status == 'online' %} d-none {% endif %}">Start</button>
+          <button id="stop" class="btn btn-danger fs-3 fw-bold {% if bot.status == 'offline' %} d-none {% endif %}">Stop</button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
