@@ -58,7 +58,7 @@ logger.addHandler(file_handler)
 logger.setLevel(logging.DEBUG)
 
 # Get the settings
-settings = get_settings()
+SETTINGS = get_settings()
 
 # Set the project dir
 project_dir = os.path.dirname(os.path.abspath(__file__))
@@ -99,13 +99,58 @@ async def on_ready():
         logger.exception("An exception happened during the cog loading.")  
     
     try:
-        #TODO: Add a /sync command, to not sync commands every time you load the bot
         sync_before = datetime.now()
         synced = await bot.tree.sync()
         delta = datetime.now() - sync_before
         logger.info(f"Synced {len(synced)} command(s) in {delta.seconds // 60}m {delta.seconds % 60}s")
     except Exception:
         logger.exception("An exception happened during command synchronization:")
+    
+    
+    logger.info("Verifying guild restrictions")
+    
+    # Leave all guilds that where joined when offline
+    original_guild_id = SETTINGS.get_or_create("guild", None)
+
+    if original_guild_id is None and bot.guilds:
+        # First run: save the first guild
+        main_guild = bot.guilds[0]
+        SETTINGS.put("guild", main_guild.id)
+        logger.info(f"Registered initial guild: {main_guild.name} (ID: {main_guild.id})")
+        # Leave any extras (safety)
+        for guild in bot.guilds[1:]:
+            logger.info(f"Leaving unauthorized guild: {guild.name} (ID: {guild.id})")
+            await guild.leave()
+
+    else:
+        # Enforce restriction if multiple guilds exist
+        for guild in bot.guilds:
+            if guild.id != original_guild_id:
+                logger.info(f"Leaving unauthorized guild: {guild.name} (ID: {guild.id})")
+                await guild.leave()
+    
+
+# Make sure the bot can't join another guild
+@bot.event
+async def on_guild_join(guild: discord.Guild):
+    """
+    Event handler triggered when the bot joins a new guild.
+    
+    This function makes sure that the bot can't be in more then 1 guild.
+    The first guild is saved in settings.json. 
+    """
+    
+    allowed_guild_id = SETTINGS.get_or_create("guild", None)
+
+    if allowed_guild_id is None:
+        SETTINGS.put("guild", guild.id)
+        logger.info(f"Registered new allowed guild: {guild.name} (ID: {guild.id})")
+    elif guild.id != allowed_guild_id:
+        logger.info(
+            f"Bot invited to unauthorized guild: {guild.name} (ID: {guild.id}), "
+            f"but restricted to guild ID {allowed_guild_id}. Leaving."
+        )
+        await guild.leave()
 
 # Example slash command
 @bot.tree.command(name="ping", description="Check the bots latency (response time).")
