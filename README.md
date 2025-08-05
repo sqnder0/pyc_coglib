@@ -82,12 +82,14 @@ Web interface integration:
 
 ### Quick Start
 
-1. **Clone the repository**:
+1. **Download a Release or Clone the Repository**:
 
-   ```bash
-   git clone https://github.com/sqnder0/pyc_coglib.git
-   cd pyc_coglib
-   ```
+   - **Download a Release**: Visit the [Releases Page](https://github.com/sqnder0/pyc_coglib/releases) to download the latest version. Note: Releases are available without the web panel for a lightweight setup.
+   - **Clone the Repository**:
+     ```bash
+     git clone https://github.com/sqnder0/pyc_coglib.git
+     cd pyc_coglib
+     ```
 
 2. **Install dependencies**:
 
