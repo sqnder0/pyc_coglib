@@ -1,3 +1,26 @@
+"""
+PyC CogLib Customization Cog
+
+Discord bot customization commands for managing bot appearance and behavior.
+Provides administrators with tools to configure the bot's presence, status,
+and visual elements like embed colors.
+
+Features:
+- Bot presence/status management (playing, listening, watching, etc.)
+- Custom status messages
+- Embed color configuration with validation
+- Persistent settings storage
+- Automatic status restoration on bot restart
+
+Commands:
+- /set_presence: Configure bot's Discord status and activity
+- /set_embed_color: Set the default color for bot embeds
+
+Author: sqnder0
+Repository: pyc_coglib
+License: See LICENSE file
+"""
+
 # Cog for customizing the bot's appearance
 import discord
 from discord.ext import commands
@@ -10,12 +33,14 @@ from typing import Optional
 SETTINGS = get_settings()
 
 class StatusEnum(Enum):
+    """Discord status options for the bot."""
     online = "online"
     idle = "idle"
     dnd = "dnd"
     invisible = "invisible"
 
 class ActivityEnum(Enum):
+    """Discord activity types for the bot."""
     playing = "playing"
     listening = "listening"
     watching = "watching"
@@ -76,7 +101,20 @@ async def load_status(bot: commands.Bot, ctx: Optional[discord.Interaction] = No
     return
 
 class Customization(commands.Cog):
+    """
+    Discord bot customization commands.
+    
+    This cog provides administrators with tools to customize the bot's
+    appearance and behavior, including status, presence, and visual elements.
+    """
+    
     def __init__(self, bot):
+        """
+        Initialize the Customization cog.
+        
+        Args:
+            bot (commands.Bot): The Discord bot instance
+        """
         self.bot = bot
         self.logger = logging.getLogger("main")
     
@@ -87,6 +125,18 @@ class Customization(commands.Cog):
         activity: ActivityEnum,
         message: str
     ):
+        """
+        Set the bot's Discord presence (status and activity).
+        
+        Args:
+            ctx (discord.Interaction): The interaction context
+            status (StatusEnum): The status to set (online, idle, dnd, invisible)
+            activity (ActivityEnum): The activity type (playing, listening, etc.)
+            message (str): The activity message to display
+            
+        This command updates both the current presence and saves the configuration
+        for automatic restoration on bot restart.
+        """
         
         SETTINGS.put(get_path("presence.activity"), activity.name)
         SETTINGS.put(get_path("presence.status"), status.name)
@@ -97,6 +147,16 @@ class Customization(commands.Cog):
     @app_commands.checks.has_permissions(administrator=True)
     @app_commands.command(name="set_embed_color", description="Set the bot's embeds color")
     async def set_embed_color(self, ctx: discord.Interaction, color: str):
+        """
+        Set the default color for bot embeds.
+        
+        Args:
+            ctx (discord.Interaction): The interaction context
+            color (str): Hex color code (e.g., "#5865F2")
+            
+        Validates the provided color format and saves it if valid.
+        The color should be a 6-character hex string, optionally prefixed with #.
+        """
         raw = color.strip().lstrip("#").lower()
         
         if len(raw) != 6 or any(c not in "0123456789abcdef" for c in raw):
@@ -112,5 +172,13 @@ class Customization(commands.Cog):
         await ctx.response.send_message(message, ephemeral=True) 
     
 async def setup(bot: commands.Bot):
+    """
+    Set up the Customization cog.
+    
+    Args:
+        bot (commands.Bot): The bot instance to add the cog to
+        
+    This function loads the saved status configuration and registers the cog.
+    """
     await load_status(bot)
     await bot.add_cog(Customization(bot))

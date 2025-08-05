@@ -1,3 +1,21 @@
+"""
+PyC CogLib Discord Bot Main Module
+
+A modular Discord bot framework built with discord.py, featuring:
+- Hot-swappable cog system for modular functionality
+- Optional web panel integration for remote management
+- Persistent settings and database storage
+- Comprehensive logging system
+- Graceful shutdown handling
+
+This is the main entry point for the bot. It handles initialization,
+extension loading, and provides both standalone and web panel modes.
+
+Author: sqnder0
+Repository: pyc_coglib
+License: See LICENSE file
+"""
+
 import os
 import asyncio
 import discord
@@ -60,6 +78,15 @@ tree = bot.tree
 # Sync slash commands on ready
 @bot.event
 async def on_ready():
+    """
+    Event handler triggered when the bot successfully connects to Discord.
+    
+    This function:
+    1. Logs the successful connection
+    2. Loads all available cogs from the cogs/ directory
+    3. Syncs slash commands with Discord
+    4. Reports timing information for both operations
+    """
     logger.info(f"Logged in as {bot.user}")
     
     logger.info("Loading cogs...")
@@ -83,15 +110,44 @@ async def on_ready():
 # Example slash command
 @bot.tree.command(name="ping", description="Check the bots latency (response time).")
 async def ping(ctx: discord.Interaction):
+    """
+    A simple ping command that responds with the bot's latency.
+    
+    Args:
+        ctx (discord.Interaction): The interaction context from Discord
+        
+    Returns:
+        A message showing the bot's current latency in milliseconds
+    """
     await ctx.response.send_message(f"Pong! {round(bot.latency, 2)}ms")
     
 async def load_extensions(bot):
+    """
+    Load all Python files from the cogs/ directory as bot extensions.
+    
+    Args:
+        bot (commands.Bot): The bot instance to load extensions into
+        
+    This function automatically discovers and loads all .py files in the
+    cogs/ directory, making it easy to add new functionality without
+    modifying the main bot file.
+    """
     for filename in os.listdir("./cogs"):
         if filename.endswith(".py"):
             await bot.load_extension(f"cogs.{filename[:-3]}")
 
 @bot.tree.error
 async def on_app_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+    """
+    Global error handler for application commands (slash commands).
+    
+    Args:
+        interaction (discord.Interaction): The interaction that caused the error
+        error (app_commands.AppCommandError): The error that occurred
+        
+    This handler provides user-friendly error messages and logs detailed
+    error information for debugging purposes.
+    """
     original_error = getattr(error, "original", error)
     cmd_name = interaction.command.name if interaction.command else "<unknown>"
 
@@ -117,6 +173,17 @@ async def on_app_error(interaction: discord.Interaction, error: app_commands.App
         
 # Run the bot
 async def bot_setup():
+    """
+    Set up and run the Discord bot with graceful shutdown handling.
+    
+    This function:
+    1. Sets up signal handlers for SIGINT and SIGTERM
+    2. Starts the bot with the provided token
+    3. Waits for shutdown signals
+    4. Gracefully closes database connections and bot connections
+    
+    The function handles missing tokens gracefully and ensures proper cleanup.
+    """
     stop_event = asyncio.Event()
     
     def handle_shutdown(*_):
@@ -145,6 +212,13 @@ async def bot_setup():
 
 
 async def main():
+    """
+    Main entry point for the application.
+    
+    This function determines whether to run in standalone mode or with
+    the optional web panel integration. If webpanels/ directory exists,
+    it starts both the bot and web API concurrently.
+    """
     if os.path.exists(os.path.join(project_dir, "webpanels/")):
         from api import get_server, set_bot, set_host, set_port
         

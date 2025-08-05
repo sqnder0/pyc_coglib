@@ -1,18 +1,62 @@
+"""
+PyC CogLib Settings Management Module
+
+A flexible JSON-based settings system with dot-notation access and automatic
+file synchronization. Provides a centralized configuration system for the
+Discord bot and its cogs.
+
+Features:
+- Dot-notation path access (e.g., "module.feature.setting")
+- Automatic file creation and synchronization
+- Per-cog namespacing support
+- Discord embed color utilities
+- Type-safe default value handling
+
+Author: sqnder0
+Repository: pyc_coglib
+License: See LICENSE file
+"""
+
 import json
 import os
 import inspect
 from typing import Any
 import discord
 
+# Sentinel value to distinguish between None and "not provided"
 _sentinel = object()
 
 
 class Settings():
+    """
+    A JSON-based settings manager with dot-notation path support.
+    
+    This class provides a persistent key-value store using JSON files,
+    with support for nested dictionaries accessed via dot notation
+    (e.g., "database.host" maps to {"database": {"host": value}}).
+    
+    Attributes:
+        filename (str): Path to the JSON settings file
+        settings (dict): In-memory representation of the settings
+    """
+    
     def __init__(self, filename: str):
+        """
+        Initialize a new Settings instance.
+        
+        Args:
+            filename (str): Path to the JSON file to use for persistence
+        """
         self.filename = filename
         self.settings = {}
     
     def setup(self):
+        """
+        Initialize the settings file and load existing data.
+        
+        Creates a new JSON file if one doesn't exist, otherwise loads
+        the existing settings into memory.
+        """
         if not os.path.exists(self.filename):
             with open(self.filename, "w") as file:
                 json.dump(self.settings, file)
@@ -21,7 +65,7 @@ class Settings():
                 self.settings = json.load(file)
     
     def save(self):
-        """Save this class' settings to their json file."""
+        """Save the current in-memory settings to the JSON file."""
         with open(self.filename, "w") as file:
             json.dump(self.settings, file, indent=3)
     def put(self, path: str, value):
@@ -116,21 +160,56 @@ class Settings():
         return current_path[last_path]
         
     
-    def get_settings_as_dict(self): return self.settings
+    def get_settings_as_dict(self): 
+        """
+        Get the complete settings dictionary.
+        
+        Returns:
+            dict: The entire settings dictionary
+        """
+        return self.settings
     
-    def get_embed_color(self): return discord.Color(int(self.get_or_create("embed.color", "#5865F2").strip().lstrip("#"), 16))
+    def get_embed_color(self): 
+        """
+        Get the configured Discord embed color.
+        
+        Returns:
+            discord.Color: The embed color, defaults to Discord's blurple (#5865F2)
+        """
+        return discord.Color(int(self.get_or_create("embed.color", "#5865F2").strip().lstrip("#"), 16))
 
 def get_settings():
+    """
+    Get the global Settings instance (singleton pattern).
+    
+    Returns:
+        Settings: The shared settings instance, creating it if necessary
+        
+    This function ensures there's only one Settings instance throughout
+    the application, initialized with "settings.json" as the backing file.
+    """
     if not hasattr(get_settings, "_instance"):
         get_settings._instance = Settings("settings.json")
         get_settings._instance.setup()
     return get_settings._instance
 
 def get_path(path: str):
-    """Prefix a path with the cogs name
-
+    """
+    Create a namespaced settings path for the calling cog.
+    
     Args:
-        path (str): the path inside the cogs config.
+        path (str): The setting path within the cog's namespace
+        
+    Returns:
+        str: A namespaced path in the format "cogname.path"
+        
+    Example:
+        # Called from moderation.py
+        get_path("warn_threshold")  # Returns "moderation.warn_threshold"
+        
+    This function automatically prefixes the provided path with the
+    calling file's name (without extension), providing automatic
+    namespacing for cog settings.
     """
     
     filename_full = inspect.stack()[1].filename

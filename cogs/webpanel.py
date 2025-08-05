@@ -1,3 +1,24 @@
+"""
+PyC CogLib Web Panel Integration Cog
+
+Flask blueprint integration for the web panel interface. Provides the backend
+routes and functionality for the web-based bot management interface.
+
+Features:
+- Bot status monitoring and display
+- Remote bot startup capabilities
+- Cross-platform terminal/console launching
+- Bot attribute querying with type conversion
+- Error handling for offline bot states
+
+This cog works in conjunction with the api.py module to provide a complete
+web-based management interface for the Discord bot.
+
+Author: sqnder0
+Repository: pyc_coglib
+License: See LICENSE file
+"""
+
 from discord.ext import commands
 from discord import app_commands
 from settings import get_settings, get_path
@@ -18,7 +39,20 @@ SETTINGS = get_settings()
 logger = logging.getLogger("main")
 
 class WebPanelCog(commands.Cog):
+    """
+    Web panel integration cog for Discord bot management.
+    
+    This cog provides the Discord.py side of the web panel integration,
+    primarily serving as a registration point for the Flask blueprint.
+    """
+    
     def __init__(self, bot: commands.Bot):
+        """
+        Initialize the WebPanel cog.
+        
+        Args:
+            bot (commands.Bot): The Discord bot instance
+        """
         self.bot = bot
 
     
@@ -27,6 +61,15 @@ webpanel = Blueprint("webapp", __name__)
 @webpanel.route("/")
 @login_required
 def index():
+    """
+    Main dashboard route for the web panel.
+    
+    Returns:
+        str: Rendered HTML template for the main dashboard
+        
+    This route gathers bot information including name, status, and cog list
+    to display on the main dashboard. Handles offline bot states gracefully.
+    """
     
     try:
         bot_data = {
@@ -49,6 +92,21 @@ def index():
 @webpanel.route("/start")
 @login_required
 def start_bot():
+    """
+    Start the bot in a new terminal/console window.
+    
+    Returns:
+        tuple: JSON response with success status and HTTP code
+        
+    This route attempts to start the bot in a new terminal window
+    based on the detected operating system:
+    - Linux: Uses gnome-terminal or xterm as fallback
+    - Windows: Uses cmd with start command
+    - macOS: Uses AppleScript to open Terminal
+    
+    The bot is started using the current Python interpreter to ensure
+    environment compatibility.
+    """
     bot_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'bot.py'))
     bot_dir = os.path.dirname(bot_path)
     python_exec = sys.executable  # Current Python interpreter path
@@ -84,6 +142,21 @@ def start_bot():
         return jsonify({"Success": False, "Error": str(e)}), 500
 
 def parse_bot_attribute(attribute: str, return_type: type=str, round_to=None) -> dict[str, Any]:
+    """
+    Parse and convert a bot attribute from the API.
+    
+    Args:
+        attribute (str): Dot-separated path to the bot attribute
+        return_type (type): Expected return type for conversion
+        round_to (int, optional): Number of decimal places for rounding
+        
+    Returns:
+        dict[str, Any]: Dictionary containing 'value' and 'count' keys
+        
+    This function queries the bot API for a specific attribute and handles
+    type conversion and error cases. It provides a structured response
+    format for consistent handling in the web interface.
+    """
     response = requests.get(f"http://{HOST}:{PORT}/bot-attribute", params={"attribute": attribute}, timeout=(0.3, 1.0))
     
     return_dict: dict[str, Any] = {"value": None, "count": None}
@@ -124,6 +197,18 @@ def parse_bot_attribute(attribute: str, return_type: type=str, round_to=None) ->
         return return_dict
 
 def make_request(request: str):
+    """
+    Make a GET request to the specified URL.
+    
+    Args:
+        request (str): The URL to make a request to
+        
+    Returns:
+        dict: JSON response if successful, error dict if failed
+        
+    This is a simple wrapper around requests.get that provides
+    consistent error handling for API communication.
+    """
     response = requests.get(request)
     
     if response.status_code == 200:
@@ -133,6 +218,15 @@ def make_request(request: str):
         
         
 async def setup(bot_arg):
+    """
+    Set up the WebPanel cog.
+    
+    Args:
+        bot_arg (commands.Bot): The bot instance to add the cog to
+        
+    This function registers both the cog and sets up the global bot reference
+    for use in the Flask blueprint routes.
+    """
     global bot
     bot = bot_arg
     await bot_arg.add_cog(WebPanelCog(bot_arg))

@@ -1,3 +1,32 @@
+"""
+PyC CogLib Ticket System Cog
+
+A comprehensive Discord ticket system with interactive buttons and configuration.
+Provides users with a way to create private support channels and staff with
+tools to manage and claim tickets.
+
+Features:
+- Interactive ticket creation with persistent buttons
+- Configurable ticket categories and descriptions
+- Ticket claiming system for staff
+- Automatic channel creation with proper permissions
+- Ticket closure with user notifications
+- Persistent button views that survive bot restarts
+
+Commands:
+- /ticket: Create the ticket creation embed with buttons
+- /ticketconfig: Configure ticket system settings
+
+Interactive Elements:
+- Create Ticket button: Creates a new support ticket
+- Claim Ticket button: Staff can claim tickets
+- Close Ticket button: Close and delete ticket channels
+
+Author: sqnder0
+Repository: pyc_coglib
+License: See LICENSE file
+"""
+
 import discord
 from discord.ext import commands
 from discord import app_commands
@@ -11,23 +40,58 @@ SETTINGS = get_settings()
 logger = logging.getLogger("main")
 
 class TicketCog(commands.Cog):
+    """
+    Discord ticket system management.
+    
+    This cog provides a complete ticket system with configurable settings,
+    interactive buttons, and staff management tools.
+    """
+    
     def __init__(self, bot):
+        """
+        Initialize the Ticket cog.
+        
+        Args:
+            bot (commands.Bot): The Discord bot instance
+        """
         self.bot = bot
     
     @commands.Cog.listener()
     async def on_ready(self):
-            ticket_buttons = TicketButtons()
-            self.bot.add_view(ticket_buttons)
-            logger.info("Ticket buttons have been re-registered.")
+        """
+        Re-register persistent views when the bot starts.
+        
+        This ensures that ticket buttons continue to work even after
+        the bot restarts, maintaining functionality for existing ticket embeds.
+        """
+        ticket_buttons = TicketButtons()
+        self.bot.add_view(ticket_buttons)
+        logger.info("Ticket buttons have been re-registered.")
         
     @commands.Cog.listener()
     async def on_resumed(self):
+        """
+        Re-register persistent views when the bot resumes connection.
+        
+        Similar to on_ready, this ensures button functionality is maintained
+        when the bot reconnects to Discord.
+        """
         ticket_buttons = TicketButtons()
         await self.bot.add_view(ticket_buttons)
         
     @app_commands.command(name="ticket")
     @app_commands.checks.has_permissions(administrator=True)
     async def ticket(self, interaction: discord.Interaction):
+        """
+        Create a ticket creation embed with interactive buttons.
+        
+        Args:
+            interaction (discord.Interaction): The interaction context
+            
+        This command creates an embed with a "Create ticket" button that users
+        can click to open new support tickets. The embed uses configured
+        descriptions and styling.
+        """
         
         await interaction.response.send_message("Configuring the embed...", ephemeral=True)
         
@@ -65,6 +129,21 @@ class TicketCog(commands.Cog):
         app_commands.Choice(name="set channel description", value="channelDesc"),
     ])
     async def ticketconfig(self, ctx: discord.Interaction, choice: app_commands.Choice[str]):
+        """
+        Configure ticket system settings.
+        
+        Args:
+            ctx (discord.Interaction): The interaction context
+            choice (app_commands.Choice[str]): The configuration option to set
+            
+        Available configuration options:
+        - setCategory: Set the Discord category where tickets are created
+        - ticketDesc: Set the description for ticket creation embeds
+        - channelDesc: Set the description shown in new ticket channels
+        
+        This command provides an interactive configuration flow where users
+        are prompted to provide the necessary information via follow-up messages.
+        """
         if choice.value == "setCategory":
             
             # Send instructions
@@ -143,13 +222,40 @@ class TicketCog(commands.Cog):
                 await ctx.followup.send("You took too long to respond❗", ephemeral=True)
 
 class TicketButtons(discord.ui.View):
+    """
+    Persistent view containing the ticket creation button.
+    
+    This view contains the main "Create ticket" button that users click
+    to open new support tickets. The view is persistent, meaning it
+    survives bot restarts.
+    """
+    
     def __init__(self):
+        """
+        Initialize the ticket buttons view.
+        
+        Sets timeout to None to make the view persistent across bot restarts.
+        """
         # Make sure the buttons never expire
         super().__init__(timeout=None)
     
     # Initialize the button
     @discord.ui.button(label="Create ticket", style=discord.ButtonStyle.green, custom_id="open_ticket")
     async def create_ticket_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        """
+        Handle ticket creation when the button is clicked.
+        
+        Args:
+            interaction (discord.Interaction): The button interaction
+            button (discord.ui.Button): The button that was clicked
+            
+        This method:
+        1. Validates the user and guild
+        2. Checks for configured ticket category
+        3. Creates a new text channel with appropriate permissions
+        4. Sends a ticket information embed with control buttons
+        5. Notifies the user of successful ticket creation
+        """
         logger.debug("Creating ticket...")
         
         # Get the user and guild
@@ -216,11 +322,36 @@ class TicketButtons(discord.ui.View):
 
 
 class TicketControlButtons(discord.ui.View):
+    """
+    Persistent view containing ticket management buttons for staff.
+    
+    This view appears in ticket channels and provides staff with
+    buttons to claim and close tickets.
+    """
+    
     def __init__(self):
+        """
+        Initialize the ticket control buttons view.
+        
+        Sets timeout to None to make the view persistent.
+        """
         super().__init__(timeout=None)
 
     @discord.ui.button(label="Claim Ticket", style=discord.ButtonStyle.blurple, custom_id="claim_ticket")
     async def claim_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
+        """
+        Handle ticket claiming when the button is clicked.
+        
+        Args:
+            interaction (discord.Interaction): The button interaction
+            button (discord.ui.Button): The button that was clicked
+            
+        This method:
+        1. Validates the interaction and message
+        2. Prevents users from claiming their own tickets
+        3. Updates the ticket embed to show who claimed it
+        4. Provides feedback to the claiming user
+        """
         # Update the embed with the claim information
         
         # Get the embed and guild
@@ -259,6 +390,19 @@ class TicketControlButtons(discord.ui.View):
 
     @discord.ui.button(label="Close Ticket", style=discord.ButtonStyle.red, custom_id="close_ticket")
     async def close_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
+        """
+        Handle ticket closure when the button is clicked.
+        
+        Args:
+            interaction (discord.Interaction): The button interaction
+            button (discord.ui.Button): The button that was clicked
+            
+        This method:
+        1. Validates permissions (only claimant can close claimed tickets)
+        2. Sends a notification to the ticket creator
+        3. Deletes the ticket channel
+        4. Handles both claimed and unclaimed ticket states
+        """
         # Check if the user has permission to close the ticket
         
         # Get the embed and guild
@@ -324,4 +468,10 @@ class TicketControlButtons(discord.ui.View):
  
 
 async def setup(bot):
+    """
+    Set up the Ticket cog.
+    
+    Args:
+        bot (commands.Bot): The bot instance to add the cog to
+    """
     await bot.add_cog(TicketCog(bot))
