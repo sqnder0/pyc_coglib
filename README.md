@@ -113,9 +113,13 @@ Web interface integration:
 
 The web panel is automatically enabled if the `webpanels/` directory exists:
 
-1. **Auto-Configuration**: The system automatically generates secure passwords and secret keys
-2. **Access**: Open `http://localhost:5566` in your browser
-3. **Login**: Use the auto-generated password from your `.env` file (`WEBPANEL_PASSWORD`)
+1. **Start the Web Panel**: Run the web interface with:
+   ```bash
+   python webpanels/app.py
+   ```
+2. **Auto-Configuration**: The system automatically generates secure passwords and secret keys.
+3. **Access**: Open `http://localhost:5566` in your browser.
+4. **Login**: Use the auto-generated password from your `.env` file (`WEBPANEL_PASSWORD`).
 
 ## 🏗️ Architecture
 
