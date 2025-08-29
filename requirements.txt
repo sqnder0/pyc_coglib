@@ -1,9 +1,8 @@
 discord.py==2.5.2
 python-dotenv==1.0.1
 Flask==3.1.1
-Flask-Login==0.6.2
+Flask-Login==0.6.3
 FastAPI==0.100.0
 uvicorn==0.23.0
 requests==2.32.3
 Jinja2==3.1.6
-Werkzeug==3.1.3
