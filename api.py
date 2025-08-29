@@ -248,7 +248,7 @@ async def toggle_cog(cog: str, register: bool):
             except Exception as e:
                 return {"error": f"Failed to unload cog: {e}"}, 500
 
-        return {"cog_name": cog_name, "registered": False}, 20
+        return {"cog_name": cog_name, "registered": False}, 200
 
 @bot_check
 @api.get("/logs")

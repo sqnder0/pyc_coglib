@@ -80,10 +80,7 @@ async function send_heartbeat() {
 
 async function toggleCog(cog, value) {
   var response = await call_api("/toggle_cog", { cog: cog, register: value });
-
-  if (response[1] == 200) {
-    return !value;
-  }
+  return response[0].registered;
 }
 
 function loadCogs(cogs) {
@@ -286,13 +283,14 @@ setInterval(async () => {
 }, 2000);
 
 document.querySelectorAll(".cog-checkbox").forEach((checkbox) => {
-  checkbox.addEventListener("change", (event) => {
+  checkbox.addEventListener("change", async (event) => {
     const cogName = event.target.id;
     const isChecked = event.target.checked;
 
     console.log(`${cogName} is now ${isChecked ? "enabled" : "disabled"}`);
 
-    var new_checked = toggleCog(cogName, isChecked);
+    var new_checked = await toggleCog(cogName, isChecked);
     event.target.checked = new_checked;
+    console.log(new_checked);
   });
 });
